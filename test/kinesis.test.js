@@ -8,3 +8,7 @@ test('I can create a stream with a name', t => {
   t.true(stream instanceof Duplex);
   t.deepEqual(stream.name, 'name')
 });
+
+
+test.todo('I can write to a kinesis stream')
+test.todo('I can read to a kinesis stream')
