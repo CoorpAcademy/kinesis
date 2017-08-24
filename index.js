@@ -131,12 +131,12 @@ KinesisStream.prototype.getShardIteratorRecords = function(shard, cb) {
   const data = {StreamName: self.name, ShardId: shard.id};
   let getShardIterator;
 
-  if (shard.nextShardIterator != null) {
+  if (shard.nextShardIterator !== null) {
     getShardIterator = function(cb) {
       cb(null, shard.nextShardIterator);
     };
   } else {
-    if (shard.readSequenceNumber != null) {
+    if (shard.readSequenceNumber !== null) {
       data.ShardIteratorType = 'AFTER_SEQUENCE_NUMBER';
       data.StartingSequenceNumber = shard.readSequenceNumber;
     } else if (self.options.oldest) {
@@ -158,7 +158,7 @@ KinesisStream.prototype.getShardIteratorRecords = function(shard, cb) {
     self.getRecords(shard, shardIterator, function(err, records) {
       if (err) {
         // Try again if the shard iterator has expired
-        if (err.name == 'ExpiredIteratorException') {
+        if (err.name === 'ExpiredIteratorException') {
           shard.nextShardIterator = null;
           return self.getShardIteratorRecords(shard, cb);
         }
@@ -194,7 +194,7 @@ KinesisStream.prototype.getRecords = function(shard, shardIterator, cb) {
     }
 
     // If the shard has been closed the requested iterator will not return any more data
-    if (res.NextShardIterator == null) {
+    if (res.NextShardIterator === null) {
       self.logger.log({get_records: true, at: 'shard-ended'});
       shard.ended = true;
       return cb(null, []);
@@ -231,13 +231,13 @@ KinesisStream.prototype._write = function(data, encoding, cb) {
 
   if (!data.SequenceNumberForOrdering) {
     // If we only have 1 shard then we can just use its sequence number
-    if (self.shards.length == 1 && self.shards[0].writeSequenceNumber) {
+    if (self.shards.length === 1 && self.shards[0].writeSequenceNumber) {
       data.SequenceNumberForOrdering = self.shards[0].writeSequenceNumber;
 
       // Otherwise, if we have a shard ID already assigned, then use that
     } else if (data.ShardId) {
       for (i = 0; i < self.shards.length; i++) {
-        if (self.shards[i].id == data.ShardId) {
+        if (self.shards[i].id === data.ShardId) {
           if (self.shards[i].writeSequenceNumber)
             data.SequenceNumberForOrdering = self.shards[i].writeSequenceNumber;
           break;
@@ -247,7 +247,7 @@ KinesisStream.prototype._write = function(data, encoding, cb) {
       delete data.ShardId;
 
       // Otherwise check if we have it cached for this PartitionKey
-    } else if ((sequenceNumber = self.sequenceCache.get(data.PartitionKey)) != null) {
+    } else if ((sequenceNumber = self.sequenceCache.get(data.PartitionKey)) !== null) {
       data.SequenceNumberForOrdering = sequenceNumber;
     }
   }
@@ -271,7 +271,7 @@ KinesisStream.prototype._write = function(data, encoding, cb) {
         return self.emit('error', err);
       }
       for (let i = 0; i < shards.length; i++) {
-        if (shards[i].id != responseData.ShardId) continue;
+        if (shards[i].id !== responseData.ShardId) continue;
 
         if (bignumCompare(sequenceNumber, shards[i].writeSequenceNumber) > 0)
           shards[i].writeSequenceNumber = sequenceNumber;
@@ -361,15 +361,15 @@ function request(action, data, options, cb) {
 
     httpOptions.host = options.host;
     httpOptions.port = options.port;
-    if (options.agent != null) httpOptions.agent = options.agent;
-    if (options.timeout != null) httpOptions.timeout = options.timeout;
-    if (options.region != null) httpOptions.region = options.region;
+    if (options.agent !== null) httpOptions.agent = options.agent;
+    if (options.timeout !== null) httpOptions.timeout = options.timeout;
+    if (options.region !== null) httpOptions.region = options.region;
     httpOptions.method = 'POST';
     httpOptions.path = '/';
     httpOptions.body = body;
 
     // Don't worry about self-signed certs for localhost/testing
-    if (httpOptions.host == 'localhost' || httpOptions.host == '127.0.0.1')
+    if (httpOptions.host === 'localhost' || httpOptions.host == '127.0.0.1')
       httpOptions.rejectUnauthorized = false;
 
     httpOptions.headers = {
@@ -423,7 +423,7 @@ function request(action, data, options, cb) {
                 parseError = e;
               }
 
-            if (res.statusCode == 200 && !parseError) {
+            if (res.statusCode === 200 && !parseError) {
               options.logger.log({
                 kinesis_request: true,
                 at: 'finish',
@@ -440,11 +440,11 @@ function request(action, data, options, cb) {
 
             const error = new Error();
             error.statusCode = res.statusCode;
-            if (response != null) {
+            if (response !== null) {
               error.name = (response.__type || '').split('#').pop();
               error.message = response.message || response.Message || JSON.stringify(response);
             } else {
-              if (res.statusCode == 413) json = 'Request Entity Too Large';
+              if (res.statusCode === 413) json = 'Request Entity Too Large';
               error.message = `HTTP/1.1 ${res.statusCode} ${json}`;
             }
 
@@ -464,7 +464,7 @@ function request(action, data, options, cb) {
         })
         .on('error', cb);
 
-      if (options.timeout != null) {
+      if (options.timeout !== null) {
         req.setTimeout(options.timeout, function() {
           options.logger.log({
             kinesis_request: true,
@@ -511,7 +511,7 @@ function defaultRetryPolicy(makeRequest, options, cb) {
     return makeRequest(function(err, data) {
       if (!err || i >= maxRetries) return cb(err, data);
 
-      if (err.statusCode == 400 && ~expiredNames.indexOf(err.name)) {
+      if (err.statusCode === 400 && ~expiredNames.indexOf(err.name)) {
         return awscred.loadCredentials(function(err, credentials) {
           if (err) return cb(err);
           options.credentials = credentials;
@@ -537,7 +537,7 @@ function resolveOptions(options) {
     return clone;
   }, {});
 
-  if (typeof region === 'object' && region != null) {
+  if (typeof region === 'object' && region !== null) {
     options.host = options.host || region.host;
     options.port = options.port || region.port;
     options.region = options.region || region.region;
