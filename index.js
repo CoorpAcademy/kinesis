@@ -1,12 +1,12 @@
-let util = require('util'),
-  stream = require('stream'),
-  https = require('https'),
-  crypto = require('crypto'),
-  async = require('async'),
-  once = require('once'),
-  lruCache = require('lru-cache'),
-  aws4 = require('aws4'),
-  awscred = require('awscred');
+const util = require('util');
+const stream = require('stream');
+const https = require('https');
+const crypto = require('crypto');
+const async = require('async');
+const once = require('once');
+const lruCache = require('lru-cache');
+const aws4 = require('aws4');
+const awscred = require('awscred');
 
 exports.stream = function(options) {
   return new KinesisStream(options);
@@ -79,8 +79,8 @@ KinesisStream.prototype.getNextRecords = function(cb) {
 };
 
 KinesisStream.prototype.resolveShards = function(cb) {
-  let self = this,
-    getShards;
+  const self = this;
+  let getShards;
 
   if (self.shards.length) return cb(null, self.shards);
 
@@ -127,9 +127,9 @@ KinesisStream.prototype.getShardIds = function(cb) {
 };
 
 KinesisStream.prototype.getShardIteratorRecords = function(shard, cb) {
-  let self = this,
-    data = {StreamName: self.name, ShardId: shard.id},
-    getShardIterator;
+  const self = this;
+  const data = {StreamName: self.name, ShardId: shard.id};
+  let getShardIterator;
 
   if (shard.nextShardIterator != null) {
     getShardIterator = function(cb) {
@@ -182,9 +182,9 @@ KinesisStream.prototype.getShardIteratorRecords = function(shard, cb) {
 };
 
 KinesisStream.prototype.getRecords = function(shard, shardIterator, cb) {
-  let self = this,
-    limit = self.options.limit || 25,
-    data = {ShardIterator: shardIterator, Limit: limit};
+  const self = this;
+  const limit = self.options.limit || 25;
+  const data = {ShardIterator: shardIterator, Limit: limit};
 
   self.logger.log({get_records: true, at: 'start'});
   request('GetRecords', data, self.options, function(err, res) {
@@ -217,9 +217,9 @@ KinesisStream.prototype.getRecords = function(shard, shardIterator, cb) {
 };
 
 KinesisStream.prototype._write = function(data, encoding, cb) {
-  let self = this,
-    i,
-    sequenceNumber;
+  const self = this;
+  let i;
+  let sequenceNumber;
 
   if (Buffer.isBuffer(data)) data = {Data: data};
 
@@ -355,9 +355,9 @@ function request(action, data, options, cb) {
     if (!options.region) options.region = (options.host || '').split('.', 2)[1] || 'us-east-1';
     if (!options.host) options.host = `kinesis.${options.region}.amazonaws.com`;
 
-    let httpOptions = {},
-      body = JSON.stringify(data),
-      retryPolicy = options.retryPolicy || defaultRetryPolicy;
+    const httpOptions = {};
+    const body = JSON.stringify(data);
+    const retryPolicy = options.retryPolicy || defaultRetryPolicy;
 
     httpOptions.host = options.host;
     httpOptions.port = options.port;
@@ -487,25 +487,25 @@ function request(action, data, options, cb) {
 }
 
 function defaultRetryPolicy(makeRequest, options, cb) {
-  let initialRetryMs = options.initialRetryMs || 50,
-    maxRetries = options.maxRetries || 10, // Timeout doubles each time => ~51 sec timeout
-    errorCodes = options.errorCodes || [
-      'EADDRINFO',
-      'ETIMEDOUT',
-      'ECONNRESET',
-      'ESOCKETTIMEDOUT',
-      'ENOTFOUND',
-      'EMFILE'
-    ],
-    errorNames = options.errorNames || [
-      'ProvisionedThroughputExceededException',
-      'ThrottlingException'
-    ],
-    expiredNames = options.expiredNames || [
-      'ExpiredTokenException',
-      'ExpiredToken',
-      'RequestExpired'
-    ];
+  const initialRetryMs = options.initialRetryMs || 50;
+  const maxRetries = options.maxRetries || 10; // Timeout doubles each time => ~51 sec timeout
+  const errorCodes = options.errorCodes || [
+    'EADDRINFO',
+    'ETIMEDOUT',
+    'ECONNRESET',
+    'ESOCKETTIMEDOUT',
+    'ENOTFOUND',
+    'EMFILE'
+  ];
+  const errorNames = options.errorNames || [
+    'ProvisionedThroughputExceededException',
+    'ThrottlingException'
+  ];
+  const expiredNames = options.expiredNames || [
+    'ExpiredTokenException',
+    'ExpiredToken',
+    'RequestExpired'
+  ];
 
   function retry(i) {
     return makeRequest(function(err, data) {
