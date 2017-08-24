@@ -1,6 +1,5 @@
 import test from 'ava';
 import kinesis from '..';
-import {Duplex} from 'stream';
 import kinesalite from 'kinesalite';
 
 let ports = 4567;

@@ -1,6 +1,6 @@
+import {Duplex, Writable} from 'stream';
 import test from 'ava';
 import kinesis from '..';
-import {Duplex, Writable} from 'stream';
 import kinesalite from 'kinesalite';
 
 let ports = 4657;
