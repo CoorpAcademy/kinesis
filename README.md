@@ -1,7 +1,7 @@
 kinesis
 -------
 
-[![Build Status](https://secure.travis-ci.org/mhart/kinesis.png?branch=master)](http://travis-ci.org/mhart/kinesis)
+[![Build Status](https://secure.travis-ci.org/CoorpAcademy/kinesis.png?branch=master)](http://travis-ci.org/CoorpAcademy/kinesis)
 
 A Node.js stream implementation of [Amazon's Kinesis](http://docs.aws.amazon.com/kinesis/latest/APIReference/).
 
