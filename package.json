@@ -16,7 +16,7 @@
   "license": "MIT",
   "scripts": {
     "test": "ava",
-    "lint": "eslint *.js"
+    "lint": "eslint *.js test examples"
   },
   "dependencies": {
     "async": "^0.9.0",
