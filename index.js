@@ -361,15 +361,15 @@ function request(action, data, options, cb) {
 
     httpOptions.host = options.host;
     httpOptions.port = options.port;
-    if (options.agent !== null) httpOptions.agent = options.agent;
-    if (options.timeout !== null) httpOptions.timeout = options.timeout;
-    if (options.region !== null) httpOptions.region = options.region;
+    if (options.agent) httpOptions.agent = options.agent;
+    if (options.timeout) httpOptions.timeout = options.timeout;
+    if (options.region) httpOptions.region = options.region;
     httpOptions.method = 'POST';
     httpOptions.path = '/';
     httpOptions.body = body;
 
     // Don't worry about self-signed certs for localhost/testing
-    if (httpOptions.host === 'localhost' || httpOptions.host == '127.0.0.1')
+    if (httpOptions.host === 'localhost' || httpOptions.host === '127.0.0.1')
       httpOptions.rejectUnauthorized = false;
 
     httpOptions.headers = {
@@ -464,7 +464,7 @@ function request(action, data, options, cb) {
         })
         .on('error', cb);
 
-      if (options.timeout !== null) {
+      if (options.timeout) {
         req.setTimeout(options.timeout, function() {
           options.logger.log({
             kinesis_request: true,
