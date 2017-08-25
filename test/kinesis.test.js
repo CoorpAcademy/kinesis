@@ -43,7 +43,7 @@ test.cb('I can read from a kinesis stream', t => {
   const confirmRead = new Writable({objectMode: true});
   confirmRead._write = function(chunk, encoding, cb) {
     t.deepEqual(chunk.PartitionKey, '12');
-    return cb() && t.end();
+    return cb() + t.end();
   };
   writeableKinesisStream.write({PartitionKey: '12', Data: Buffer.from('Hello Stream')});
   writeableKinesisStream.write({PartitionKey: '12', Data: Buffer.from('Hello Stream')});
