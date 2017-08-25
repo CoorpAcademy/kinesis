@@ -16,7 +16,9 @@
   "license": "MIT",
   "scripts": {
     "test": "ava",
-    "lint": "eslint kinesis.js lib test examples"
+    "lint": "eslint kinesis.js lib test examples",
+    "cover": "nyc npm run test",
+    "publish-coverage": "nyc report --reporter=lcov > coverage.lcov && codecov"
   },
   "dependencies": {
     "async": "^0.9.0",
@@ -28,7 +30,9 @@
   "devDependencies": {
     "@coorpacademy/eslint-plugin-coorpacademy": "^6.0.1",
     "ava": "^0.22.0",
+    "codecov": "^2.3.0",
     "eslint": "^4.5.0",
-    "kinesalite": "^1.11.6"
+    "kinesalite": "^1.11.6",
+    "nyc": "^11.1.0"
   }
 }

@@ -2,7 +2,7 @@ import test from 'ava';
 import kinesalite from 'kinesalite';
 import kinesis from '../kinesis';
 
-let ports = 4567;
+let ports = 5678;
 
 test.cb.beforeEach('setup kinesalite', t => {
   const port = ports++;
