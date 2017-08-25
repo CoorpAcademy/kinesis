@@ -19,10 +19,10 @@ Example
 -------
 
 ```js
-var fs = require('fs'),
-    Transform = require('stream').Transform,
-    kinesis = require('kinesis'),
-    KinesisStream = kinesis.KinesisStream
+const fs = require('fs');
+const Transform = require('stream').Transform;
+const kinesis = require('kinesis');
+const KinesisStream = kinesis.KinesisStream;
 
 // Uses credentials from process.env by default
 
@@ -34,16 +34,16 @@ kinesis.listStreams({region: 'us-west-1'}, function(err, streams) {
 })
 
 
-var kinesisSink = kinesis.stream('http-logs')
+const kinesisSink = kinesis.stream('http-logs')
 // OR new KinesisStream('http-logs')
 
 fs.createReadStream('http.log').pipe(kinesisSink)
 
 
-var kinesisSource = kinesis.stream({name: 'click-logs', oldest: true})
+const kinesisSource = kinesis.stream({name: 'click-logs', oldest: true})
 
 // Data is retrieved as Record objects, so let's transform into Buffers
-var bufferify = new Transform({objectMode: true})
+const bufferify = new Transform({objectMode: true})
 bufferify._transform = function(record, encoding, cb) {
   cb(null, record.Data)
 }
