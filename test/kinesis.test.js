@@ -1,7 +1,7 @@
 import {Duplex, Writable} from 'stream';
 import test from 'ava';
-import kinesis from '../kinesis';
 import kinesalite from 'kinesalite';
+import kinesis from '../kinesis';
 
 let ports = 4657;
 
@@ -43,8 +43,7 @@ test.cb('I can read from a kinesis stream', t => {
   const confirmRead = new Writable({objectMode: true});
   confirmRead._write = function(chunk, encoding, cb) {
     t.deepEqual(chunk.PartitionKey, '12');
-    t.end();
-    cb();
+    return cb() && t.end();
   };
   writeableKinesisStream.write({PartitionKey: '12', Data: Buffer.from('Hello Stream')});
   writeableKinesisStream.write({PartitionKey: '12', Data: Buffer.from('Hello Stream')});

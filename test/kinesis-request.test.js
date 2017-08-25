@@ -1,6 +1,6 @@
 import test from 'ava';
-import kinesis from '../kinesis';
 import kinesalite from 'kinesalite';
+import kinesis from '../kinesis';
 
 let ports = 4567;
 
