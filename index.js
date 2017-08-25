@@ -8,6 +8,8 @@ const lruCache = require('lru-cache');
 const aws4 = require('aws4');
 const awscred = require('awscred');
 
+const {bignumCompare} = require('./lib/utils');
+
 exports.stream = function(options) {
   return new KinesisStream(options);
 };
@@ -539,12 +541,4 @@ function resolveOptions(options) {
   if (!options.logger) options.logger = nullLogger;
 
   return options;
-}
-
-function bignumCompare(a, b) {
-  if (!a) return -1;
-  if (!b) return 1;
-  const lengthDiff = a.length - b.length;
-  if (lengthDiff !== 0) return lengthDiff;
-  return a.localeCompare(b);
 }
