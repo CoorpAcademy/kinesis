@@ -103,18 +103,15 @@ KinesisStream.prototype.resolveShards = function(cb) {
 };
 
 KinesisStream.prototype.getShardIds = function(cb) {
-  const self = this;
-  request('DescribeStream', {StreamName: self.name}, self.options, function(err, res) {
+  request('DescribeStream', {StreamName: this.name}, this.options, (err, res) => {
     if (err) return cb(err);
     cb(
       null,
       res.StreamDescription.Shards
-        .filter(function(shard) {
-          return !(shard.SequenceNumberRange && shard.SequenceNumberRange.EndingSequenceNumber);
-        })
-        .map(function(shard) {
-          return shard.ShardId;
-        })
+        .filter(
+          shard => !(shard.SequenceNumberRange && shard.SequenceNumberRange.EndingSequenceNumber)
+        )
+        .map(shard => shard.ShardId)
     );
   });
 };
@@ -205,7 +202,6 @@ KinesisStream.prototype.getRecords = function(shard, shardIterator, cb) {
 };
 
 KinesisStream.prototype._write = function(data, encoding, cb) {
-  const self = this;
   let i;
   let sequenceNumber;
 
@@ -213,21 +209,21 @@ KinesisStream.prototype._write = function(data, encoding, cb) {
 
   if (Buffer.isBuffer(data.Data)) data.Data = data.Data.toString('base64');
 
-  if (!data.StreamName) data.StreamName = self.name;
+  if (!data.StreamName) data.StreamName = this.name;
 
   if (!data.PartitionKey) data.PartitionKey = crypto.randomBytes(16).toString('hex');
 
   if (!data.SequenceNumberForOrdering) {
     // If we only have 1 shard then we can just use its sequence number
-    if (self.shards.length === 1 && self.shards[0].writeSequenceNumber) {
-      data.SequenceNumberForOrdering = self.shards[0].writeSequenceNumber;
+    if (this.shards.length === 1 && this.shards[0].writeSequenceNumber) {
+      data.SequenceNumberForOrdering = this.shards[0].writeSequenceNumber;
 
       // Otherwise, if we have a shard ID already assigned, then use that
     } else if (data.ShardId) {
-      for (i = 0; i < self.shards.length; i++) {
-        if (self.shards[i].id === data.ShardId) {
-          if (self.shards[i].writeSequenceNumber)
-            data.SequenceNumberForOrdering = self.shards[i].writeSequenceNumber;
+      for (i = 0; i < this.shards.length; i++) {
+        if (this.shards[i].id === data.ShardId) {
+          if (this.shards[i].writeSequenceNumber)
+            data.SequenceNumberForOrdering = this.shards[i].writeSequenceNumber;
           break;
         }
       }
@@ -235,28 +231,28 @@ KinesisStream.prototype._write = function(data, encoding, cb) {
       delete data.ShardId;
 
       // Otherwise check if we have it cached for this PartitionKey
-    } else if ((sequenceNumber = self.sequenceCache.get(data.PartitionKey)) !== null) {
+    } else if ((sequenceNumber = this.sequenceCache.get(data.PartitionKey)) !== null) {
       data.SequenceNumberForOrdering = sequenceNumber;
     }
   }
 
-  self.currentWrites++;
+  this.currentWrites++;
 
-  request('PutRecord', data, self.options, function(err, responseData) {
-    self.currentWrites--;
+  request('PutRecord', data, this.options, (err, responseData) => {
+    this.currentWrites--;
     if (err) {
-      self.emit('putRecord', data);
-      return self.emit('error', err);
+      this.emit('putRecord', data);
+      return this.emit('error', err);
     }
     sequenceNumber = responseData.SequenceNumber;
 
-    if (bignumCompare(sequenceNumber, self.sequenceCache.get(data.PartitionKey)) > 0)
-      self.sequenceCache.set(data.PartitionKey, sequenceNumber);
+    if (bignumCompare(sequenceNumber, this.sequenceCache.get(data.PartitionKey)) > 0)
+      this.sequenceCache.set(data.PartitionKey, sequenceNumber);
 
-    self.resolveShards(function(err, shards) {
+    this.resolveShards((err, shards) => {
       if (err) {
-        self.emit('putRecord', data);
-        return self.emit('error', err);
+        this.emit('putRecord', data);
+        return this.emit('error', err);
       }
       for (let i = 0; i < shards.length; i++) {
         if (shards[i].id !== responseData.ShardId) continue;
@@ -264,19 +260,19 @@ KinesisStream.prototype._write = function(data, encoding, cb) {
         if (bignumCompare(sequenceNumber, shards[i].writeSequenceNumber) > 0)
           shards[i].writeSequenceNumber = sequenceNumber;
 
-        self.emit('putRecord', data);
+        this.emit('putRecord', data);
       }
     });
   });
 
-  if (self.currentWrites < self.writeConcurrency) return cb();
+  if (this.currentWrites < this.writeConcurrency) return cb();
 
-  function onPutRecord(_data) {
+  const onPutRecord = _data => {
     if (data !== _data) return;
-    self.removeListener('putRecord', onPutRecord);
+    this.removeListener('putRecord', onPutRecord);
     cb();
-  }
-  self.on('putRecord', onPutRecord);
+  };
+  this.on('putRecord', onPutRecord);
 };
 
 function listStreams(options, cb) {
@@ -285,7 +281,7 @@ function listStreams(options, cb) {
     options = {};
   }
 
-  request('ListStreams', {}, options, function(err, res) {
+  request('ListStreams', {}, options, (err, res) => {
     if (err) return cb(err);
 
     return cb(null, res.StreamNames);
