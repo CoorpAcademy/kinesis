@@ -40,60 +40,53 @@ KinesisStream.prototype._read = function() {
 };
 
 KinesisStream.prototype.drainBuffer = function() {
-  const self = this;
-  if (self.paused) return;
-  while (self.buffer.length) {
-    if (!self.push(self.buffer.shift())) {
-      self.paused = true;
+  if (this.paused) return;
+  while (this.buffer.length) {
+    if (!this.push(this.buffer.shift())) {
+      this.paused = true;
       return;
     }
   }
-  if (self.fetching) return;
-  self.fetching = true;
-  self.getNextRecords(function(err) {
-    self.fetching = false;
-    if (err) self.emit('error', err);
+  if (this.fetching) return;
+  this.fetching = true;
+  this.getNextRecords(err => {
+    this.fetching = false;
+    if (err) this.emit('error', err);
 
     // If all shards have been closed, the stream should end
     if (
-      self.shards.every(function(shard) {
+      this.shards.every(function(shard) {
         return shard.ended;
       })
     )
-      return self.push(null);
+      return this.push(null);
 
-    if (self.options.backoffTime) {
-      setTimeout(self.drainBuffer.bind(self), self.options.backoffTime);
+    if (this.options.backoffTime) {
+      setTimeout(this.drainBuffer.bind(this), this.options.backoffTime);
     } else {
-      self.drainBuffer();
+      this.drainBuffer();
     }
   });
 };
 
 KinesisStream.prototype.getNextRecords = function(cb) {
-  const self = this;
-  self.resolveShards(function(err, shards) {
+  this.resolveShards((err, shards) => {
     if (err) return cb(err);
-    async.each(shards, self.getShardIteratorRecords.bind(self), cb);
+    async.each(shards, this.getShardIteratorRecords.bind(this), cb);
   });
 };
 
 KinesisStream.prototype.resolveShards = function(cb) {
-  const self = this;
-  let getShards;
+  if (this.shards.length > 0) return cb(null, this.shards);
 
-  if (self.shards.length) return cb(null, self.shards);
+  const getShards = this.options.shards
+    ? callback => callback(null, this.options.shards)
+    : this.getShardIds.bind(this);
 
-  getShards = self.options.shards
-    ? function(cb) {
-        cb(null, self.options.shards);
-      }
-    : self.getShardIds.bind(self);
-
-  getShards(function(err, shards) {
+  getShards((err, shards) => {
     if (err) return cb(err);
 
-    self.shards = shards.map(function(shard) {
+    this.shards = shards.map(function(shard) {
       return typeof shard === 'string'
         ? {
             id: shard,
@@ -105,7 +98,7 @@ KinesisStream.prototype.resolveShards = function(cb) {
         : shard;
     });
 
-    cb(null, self.shards);
+    cb(null, this.shards);
   });
 };
 
@@ -127,52 +120,48 @@ KinesisStream.prototype.getShardIds = function(cb) {
 };
 
 KinesisStream.prototype.getShardIteratorRecords = function(shard, cb) {
-  const self = this;
-  const data = {StreamName: self.name, ShardId: shard.id};
+  const data = {StreamName: this.name, ShardId: shard.id};
   let getShardIterator;
 
   if (shard.nextShardIterator !== null) {
-    getShardIterator = function(cb) {
-      cb(null, shard.nextShardIterator);
-    };
+    getShardIterator = callback => callback(null, shard.nextShardIterator);
   } else {
     if (shard.readSequenceNumber !== null) {
       data.ShardIteratorType = 'AFTER_SEQUENCE_NUMBER';
       data.StartingSequenceNumber = shard.readSequenceNumber;
-    } else if (self.options.oldest) {
+    } else if (this.options.oldest) {
       data.ShardIteratorType = 'TRIM_HORIZON';
     } else {
       data.ShardIteratorType = 'LATEST';
     }
-    getShardIterator = function(cb) {
-      request('GetShardIterator', data, self.options, function(err, res) {
-        if (err) return cb(err);
-        cb(null, res.ShardIterator);
+    getShardIterator = callback =>
+      request('GetShardIterator', data, this.options, (err, res) => {
+        if (err) return callback(err);
+        callback(null, res.ShardIterator);
       });
-    };
   }
 
-  getShardIterator(function(err, shardIterator) {
+  getShardIterator((err, shardIterator) => {
     if (err) return cb(err);
 
-    self.getRecords(shard, shardIterator, function(err, records) {
+    this.getRecords(shard, shardIterator, (err, records) => {
       if (err) {
         // Try again if the shard iterator has expired
         if (err.name === 'ExpiredIteratorException') {
           shard.nextShardIterator = null;
-          return self.getShardIteratorRecords(shard, cb);
+          return this.getShardIteratorRecords(shard, cb);
         }
         return cb(err);
       }
 
-      if (records.length) {
+      if (records.length > 0) {
         shard.readSequenceNumber = records[records.length - 1].SequenceNumber;
-        self.buffer = self.buffer.concat(records);
+        this.buffer = this.buffer.concat(records);
 
-        if (self.options.backoffTime) {
-          setTimeout(self.drainBuffer.bind(self), self.options.backoffTime);
+        if (this.options.backoffTime) {
+          setTimeout(this.drainBuffer.bind(this), this.options.backoffTime);
         } else {
-          self.drainBuffer();
+          this.drainBuffer();
         }
       }
 
@@ -182,32 +171,31 @@ KinesisStream.prototype.getShardIteratorRecords = function(shard, cb) {
 };
 
 KinesisStream.prototype.getRecords = function(shard, shardIterator, cb) {
-  const self = this;
-  const limit = self.options.limit || 25;
+  const limit = this.options.limit || 25;
   const data = {ShardIterator: shardIterator, Limit: limit};
 
-  self.logger.log({get_records: true, at: 'start'});
-  request('GetRecords', data, self.options, function(err, res) {
+  this.logger.log({get_records: true, at: 'start'});
+  request('GetRecords', data, this.options, (err, res) => {
     if (err) {
-      self.logger.log({get_records: true, at: 'error', error: err});
+      this.logger.log({get_records: true, at: 'error', error: err});
       return cb(err);
     }
 
     // If the shard has been closed the requested iterator will not return any more data
     if (res.NextShardIterator === null) {
-      self.logger.log({get_records: true, at: 'shard-ended'});
+      this.logger.log({get_records: true, at: 'shard-ended'});
       shard.ended = true;
       return cb(null, []);
     }
 
     shard.nextShardIterator = res.NextShardIterator;
-    self.logger.log({
+    this.logger.log({
       get_records: true,
       at: 'finish',
       record_count: res.Records.length
     });
 
-    res.Records.forEach(function(record) {
+    res.Records.forEach(record => {
       record.ShardId = shard.id;
       record.Data = Buffer.from(record.Data, 'base64');
     });
