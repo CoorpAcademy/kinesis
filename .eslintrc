@@ -18,6 +18,8 @@
     "@coorpacademy/coorpacademy"
   ],
   "rules": {
+    "fp/no-loops": "off",
+    "no-param-reassign": "off",
     "strict": "off"
   }
 }

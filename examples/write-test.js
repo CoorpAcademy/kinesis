@@ -12,5 +12,5 @@ readable._read = function() {
 const kinesisStream = kinesis.stream({name: 'test', writeConcurrency: 5});
 
 readable.pipe(kinesisStream).on('end', function() {
-  console.log('done');
+  console.log('done'); // eslint-disable-line no-console
 });

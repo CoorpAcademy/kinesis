@@ -6,7 +6,7 @@ require('https').globalAgent.maxSockets = Infinity;
 const consoleOut = new Writable({objectMode: true});
 consoleOut._write = function(chunk, encoding, cb) {
   chunk.Data = chunk.Data.slice(0, 10);
-  console.dir(chunk);
+  console.dir(chunk); // eslint-disable-line no-console
   cb();
 };
 

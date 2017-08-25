@@ -12,8 +12,8 @@ test.cb.beforeEach('setup kinesalite', t => {
   const kinesisStreamOptions = Object.assign({}, kinesisOptions, {name: 'test'});
   kinesisServer.listen(kinesisOptions.port, err => {
     if (err) return t.end(err);
-    kinesis.request('CreateStream', {StreamName: 'test', ShardCount: 2}, kinesisOptions, err => {
-      setTimeout(() => t.end(err), 1000);
+    kinesis.request('CreateStream', {StreamName: 'test', ShardCount: 2}, kinesisOptions, errr => {
+      setTimeout(() => t.end(errr), 1000);
       // delai to ensure creation of stream
     });
   });
