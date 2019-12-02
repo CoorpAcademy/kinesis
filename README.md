@@ -1,7 +1,7 @@
 kinesis
 =======
 
-[![Build Status](https://secure.travis-ci.org/CoorpAcademy/kinesis.svg?branch=master)](http://travis-ci.org/CoorpAcademy/kinesis)
+[![Build Status](https://travis-ci.com/CoorpAcademy/kinesis.svg?branch=master)](http://travis-ci.com/CoorpAcademy/kinesis)
 [![codecov](https://codecov.io/gh/CoorpAcademy/kinesis/branch/master/graph/badge.svg)](https://codecov.io/gh/CoorpAcademy/kinesis)
 
 A Node.js stream implementation of [Amazon's Kinesis](http://docs.aws.amazon.com/kinesis/latest/APIReference/).
