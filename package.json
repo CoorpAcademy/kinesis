@@ -15,10 +15,10 @@
   "author": "Michael Hart <michael.hart.au@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "test": "npm run lint && ava",
-    "lint": "eslint lib/ test/ examples/ *.js *.json --ext .js,.json",
+    "test": "npm run lint && npm run test:only",
+    "test:only": "nyc ava",
+    "lint": "eslint . --ext .js,.json",
     "lint:fix": "npm run lint -- --fix",
-    "cover": "nyc npm run test",
     "publish-coverage": "nyc report --reporter=lcov > coverage.lcov && codecov"
   },
   "dependencies": {
