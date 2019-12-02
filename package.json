@@ -33,10 +33,10 @@
   },
   "devDependencies": {
     "@coorpacademy/eslint-plugin-coorpacademy": "^9.0.1",
-    "ava": "^0.22.0",
-    "codecov": "^2.3.0",
+    "ava": "^2.4.0",
+    "codecov": "^3.6.1",
     "eslint": "^6.7.2",
     "kinesalite": "^1.11.6",
-    "nyc": "^11.1.0"
+    "nyc": "^14.1.1"
   }
 }
