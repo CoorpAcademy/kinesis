@@ -97,21 +97,17 @@ function request(action, data, options, cb) {
       !options.credentials ||
       !options.credentials.accessKeyId ||
       !options.credentials.secretAccessKey;
-    if (needRegion && needCreds) {
-      return awscred.load(callback);
-    } else if (needRegion) {
-      return awscred.loadRegion(function(err, region) {
-        callback(err, {region});
-      });
-    } else if (needCreds) {
-      return awscred.loadCredentials(function(err, credentials) {
-        callback(err, {credentials});
-      });
-    }
+    if (needRegion && needCreds) return awscred.load(callback);
+
+    if (needRegion) return awscred.loadRegion((err, region) => callback(err, {region}));
+
+    if (needCreds)
+      return awscred.loadCredentials((err, credentials) => callback(err, {credentials}));
+
     callback(null, {});
   }
 
-  loadCreds(function(err, creds) {
+  loadCreds((err, creds) => {
     if (err) return cb(err);
 
     if (creds.region) options.region = creds.region;
@@ -166,12 +162,12 @@ function request(action, data, options, cb) {
       });
 
       const req = https
-        .request(httpOptions, function(res) {
+        .request(httpOptions, res => {
           let json = '';
 
           res.setEncoding('utf8');
 
-          res.on('error', function(error) {
+          res.on('error', error => {
             options.logger.log({
               kinesis_request: true,
               at: 'error',
@@ -183,10 +179,10 @@ function request(action, data, options, cb) {
           });
 
           res.on('error', callback);
-          res.on('data', function(chunk) {
+          res.on('data', chunk => {
             json += chunk;
           });
-          res.on('end', function() {
+          res.on('end', () => {
             let response, parseError;
 
             if (json)
@@ -238,7 +234,7 @@ function request(action, data, options, cb) {
         .on('error', callback);
 
       if (options.timeout !== undefined) {
-        req.setTimeout(options.timeout, function() {
+        req.setTimeout(options.timeout, () => {
           options.logger.log({
             kinesis_request: true,
             at: 'timeout',

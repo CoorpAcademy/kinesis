@@ -45,12 +45,7 @@ KinesisStream.prototype.drainBuffer = function() {
     if (err) this.emit('error', err);
 
     // If all shards have been closed, the stream should end
-    if (
-      this.shards.every(function(shard) {
-        return shard.ended;
-      })
-    )
-      return this.push(null);
+    if (this.shards.every(shard => shard.ended)) return this.push(null);
 
     if (this.options.backoffTime) {
       setTimeout(this.drainBuffer.bind(this), this.options.backoffTime);
