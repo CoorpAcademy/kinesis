@@ -4,7 +4,7 @@ import kinesis from '../kinesis';
 
 let ports = 5678;
 
-test.cb.beforeEach('setup kinesalite', t => {
+test.beforeEach.cb('setup kinesalite', t => {
   const port = ports++;
   const kinesisServer = kinesalite({ssl: true});
   const kinesisOptions = {host: 'localhost', port};
@@ -12,7 +12,7 @@ test.cb.beforeEach('setup kinesalite', t => {
   t.context = {kinesisServer, kinesisOptions};
 });
 
-test.cb.afterEach('destroy the kinesalite', t => {
+test.afterEach.cb('destroy the kinesalite', t => {
   t.context.kinesisServer.close(t.end);
 });
 
