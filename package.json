@@ -38,5 +38,11 @@
     "eslint": "^6.7.2",
     "kinesalite": "^3.2.0",
     "nyc": "^14.1.1"
+  },
+  "ava": {
+    "environmentVariables": {
+      "AWS_ACCESS_KEY_ID": "stub",
+      "AWS_SECRET_ACCESS_KEY": "stub"
+    }
   }
 }
