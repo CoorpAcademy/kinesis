@@ -3,7 +3,7 @@
   "version": "2.1.0",
   "description": "A stream implementation of Amazon's Kinesis forked from mhart/heroku/kinesis",
   "main": "kinesis.js",
-  "repository": "heroku/kinesis",
+  "repository": "coorpacademy/kinesis",
   "keywords": [
     "kinesis",
     "stream",
@@ -13,6 +13,9 @@
     "logging"
   ],
   "author": "Michael Hart <michael.hart.au@gmail.com>",
+  "maintainers": [
+    "Adrien Becchis (http://github.com/AdrieanKhisbe) <adrien.becchis@coorpacademy.com>"
+  ],
   "license": "MIT",
   "scripts": {
     "test": "npm run lint && npm run test:only",
