@@ -5,7 +5,7 @@ import kinesis from '../kinesis';
 
 let ports = 4657;
 
-test.cb.beforeEach('setup kinesalite', t => {
+test.beforeEach.cb('setup kinesalite', t => {
   const port = ports++;
   const kinesisServer = kinesalite({ssl: true});
   const kinesisOptions = {host: 'localhost', port};
@@ -20,7 +20,7 @@ test.cb.beforeEach('setup kinesalite', t => {
   t.context = {kinesisServer, kinesisOptions, kinesisStreamOptions};
 });
 
-test.cb.afterEach('destroy the kinesalite', t => {
+test.afterEach.cb('destroy the kinesalite', t => {
   t.context.kinesisServer.close(t.end);
 });
 
@@ -34,6 +34,18 @@ test('I can create a stream with a name', t => {
 test.cb('I can write to a kinesis stream', t => {
   const kinesisStream = kinesis.stream(t.context.kinesisStreamOptions);
   kinesisStream.write({PartitionKey: '12', Data: Buffer.from('Hello Stream')}, null, t.end);
+});
+
+test.cb('I can write to a stream configured via endpoint', t => {
+  const {host, port} = t.context.kinesisOptions;
+  const kinesisOptions = {endpoint: `http://${host}:${port}`};
+  const kinesisStreamOptions = Object.assign({}, kinesisOptions, {name: 'test'});
+  const kinesisStream = kinesis.stream(kinesisStreamOptions);
+  kinesisStream.write(
+    {PartitionKey: '12', Data: Buffer.from('Hello endpoint stream Stream')},
+    null,
+    t.end
+  );
 });
 
 test.cb('I can read from a kinesis stream', t => {

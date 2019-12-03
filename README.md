@@ -1,7 +1,7 @@
 kinesis
 =======
 
-[![Build Status](https://secure.travis-ci.org/CoorpAcademy/kinesis.svg?branch=master)](http://travis-ci.org/CoorpAcademy/kinesis)
+[![Build Status](https://travis-ci.com/CoorpAcademy/kinesis.svg?branch=master)](http://travis-ci.com/CoorpAcademy/kinesis)
 [![codecov](https://codecov.io/gh/CoorpAcademy/kinesis/branch/master/graph/badge.svg)](https://codecov.io/gh/CoorpAcademy/kinesis)
 
 A Node.js stream implementation of [Amazon's Kinesis](http://docs.aws.amazon.com/kinesis/latest/APIReference/).
@@ -89,6 +89,7 @@ Returns a readable and writable Node.js stream for the given Kinesis stream
     (`['ProvisionedThroughputExceededException', 'ThrottlingException']` by default)
   - `retryPolicy`: a function to implement a retry policy different from the default one
   - `logger`: an object which implements a `log` method, e.g. `console`.
+  - `endpoint`: **new** configuration to specify host, port and protocol (https or not) a once
 
 ### kinesis.listStreams([options], callback)
 
@@ -111,3 +112,7 @@ Makes a generic Kinesis request with the given action (eg, `ListStreams`) and da
   - `errorNames`: array of Kinesis exceptions to retry on
     (`['ProvisionedThroughputExceededException', 'ThrottlingException']` by default)
   - `retryPolicy`: a function to implement a retry policy different from the default one
+  - `endpoint`: **new** configuration to specify host, port and protocol (https or not) a once
+
+Note, if targeting `localhost`/`127.0.0.1`, or having specified `http` as protocol,
+you won't get any error for self-signed certificates. (which is what you need in a docker testing context)

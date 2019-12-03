@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const util = require('util');
 const stream = require('stream');
 const async = require('async');
-const lruCache = require('lru-cache');
+const LRUCache = require('lru-cache');
 
 const {bignumCompare, nullLogger} = require('./utils');
 const {request} = require('./kinesis-request');
@@ -14,7 +14,7 @@ function KinesisStream(options) {
   this.options = options;
   this.name = options.name;
   this.writeConcurrency = options.writeConcurrency || 1;
-  this.sequenceCache = lruCache(options.cacheSize || 1000);
+  this.sequenceCache = new LRUCache(options.cacheSize || 1000);
   this.currentWrites = 0;
   this.buffer = [];
   this.paused = true;
@@ -45,12 +45,7 @@ KinesisStream.prototype.drainBuffer = function() {
     if (err) this.emit('error', err);
 
     // If all shards have been closed, the stream should end
-    if (
-      this.shards.every(function(shard) {
-        return shard.ended;
-      })
-    )
-      return this.push(null);
+    if (this.shards.every(shard => shard.ended)) return this.push(null);
 
     if (this.options.backoffTime) {
       setTimeout(this.drainBuffer.bind(this), this.options.backoffTime);

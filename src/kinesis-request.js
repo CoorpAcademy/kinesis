@@ -23,6 +23,13 @@ function resolveOptions(options) {
     options.credentials = options.credentials || region.credentials;
   } else if (/^[a-z]{2}-[a-z]+-\d$/.test(region)) {
     options.region = region;
+  } else if (options.endpoint) {
+    const match = options.endpoint.match(/^(https?):\/\/([\w\-.]+)(?::(\d+))?$/);
+    if (!match) throw new Error('Provided endpoint value is invalid');
+    const [, protocol, host, port] = match;
+    options.host = host;
+    if (port) options.port = Number(port);
+    options.https = protocol === 'https';
   } else if (!options.host) {
     // Backwards compatibility for when 1st param was host
     options.host = region;
@@ -97,21 +104,17 @@ function request(action, data, options, cb) {
       !options.credentials ||
       !options.credentials.accessKeyId ||
       !options.credentials.secretAccessKey;
-    if (needRegion && needCreds) {
-      return awscred.load(callback);
-    } else if (needRegion) {
-      return awscred.loadRegion(function(err, region) {
-        callback(err, {region});
-      });
-    } else if (needCreds) {
-      return awscred.loadCredentials(function(err, credentials) {
-        callback(err, {credentials});
-      });
-    }
+    if (needRegion && needCreds) return awscred.load(callback);
+
+    if (needRegion) return awscred.loadRegion((err, region) => callback(err, {region}));
+
+    if (needCreds)
+      return awscred.loadCredentials((err, credentials) => callback(err, {credentials}));
+
     callback(null, {});
   }
 
-  loadCreds(function(err, creds) {
+  loadCreds((err, creds) => {
     if (err) return cb(err);
 
     if (creds.region) options.region = creds.region;
@@ -141,8 +144,12 @@ function request(action, data, options, cb) {
     httpOptions.path = '/';
     httpOptions.body = body;
 
-    // Don't worry about self-signed certs for localhost/testing
-    if (httpOptions.host === 'localhost' || httpOptions.host === '127.0.0.1')
+    // Don't worry about self-signed certs for localhost/testing and http
+    if (
+      httpOptions.host === 'localhost' ||
+      httpOptions.host === '127.0.0.1' ||
+      options.https === false
+    )
       httpOptions.rejectUnauthorized = false;
 
     httpOptions.headers = {
@@ -166,12 +173,12 @@ function request(action, data, options, cb) {
       });
 
       const req = https
-        .request(httpOptions, function(res) {
+        .request(httpOptions, res => {
           let json = '';
 
           res.setEncoding('utf8');
 
-          res.on('error', function(error) {
+          res.on('error', error => {
             options.logger.log({
               kinesis_request: true,
               at: 'error',
@@ -183,10 +190,10 @@ function request(action, data, options, cb) {
           });
 
           res.on('error', callback);
-          res.on('data', function(chunk) {
+          res.on('data', chunk => {
             json += chunk;
           });
-          res.on('end', function() {
+          res.on('end', () => {
             let response, parseError;
 
             if (json)
@@ -238,7 +245,7 @@ function request(action, data, options, cb) {
         .on('error', callback);
 
       if (options.timeout !== undefined) {
-        req.setTimeout(options.timeout, function() {
+        req.setTimeout(options.timeout, () => {
           options.logger.log({
             kinesis_request: true,
             at: 'timeout',
