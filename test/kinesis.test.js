@@ -36,6 +36,18 @@ test.cb('I can write to a kinesis stream', t => {
   kinesisStream.write({PartitionKey: '12', Data: Buffer.from('Hello Stream')}, null, t.end);
 });
 
+test.cb('I can write to a stream configured via endpoint', t => {
+  const {host, port} = t.context.kinesisOptions;
+  const kinesisOptions = {endpoint: `http://${host}:${port}`};
+  const kinesisStreamOptions = Object.assign({}, kinesisOptions, {name: 'test'});
+  const kinesisStream = kinesis.stream(kinesisStreamOptions);
+  kinesisStream.write(
+    {PartitionKey: '12', Data: Buffer.from('Hello endpoint stream Stream')},
+    null,
+    t.end
+  );
+});
+
 test.cb('I can read from a kinesis stream', t => {
   const writeableKinesisStream = kinesis.stream(t.context.kinesisStreamOptions);
   const kinesisStream = kinesis.stream(t.context.kinesisStreamOptions);

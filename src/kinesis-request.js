@@ -23,6 +23,13 @@ function resolveOptions(options) {
     options.credentials = options.credentials || region.credentials;
   } else if (/^[a-z]{2}-[a-z]+-\d$/.test(region)) {
     options.region = region;
+  } else if (options.endpoint) {
+    const match = options.endpoint.match(/^(https?):\/\/([\w\-.]+)(?::(\d+))?$/);
+    if (!match) throw new Error('Provided endpoint value is invalid');
+    const [, protocol, host, port] = match;
+    options.host = host;
+    if (port) options.port = Number(port);
+    options.https = protocol === 'https';
   } else if (!options.host) {
     // Backwards compatibility for when 1st param was host
     options.host = region;
@@ -137,8 +144,12 @@ function request(action, data, options, cb) {
     httpOptions.path = '/';
     httpOptions.body = body;
 
-    // Don't worry about self-signed certs for localhost/testing
-    if (httpOptions.host === 'localhost' || httpOptions.host === '127.0.0.1')
+    // Don't worry about self-signed certs for localhost/testing and http
+    if (
+      httpOptions.host === 'localhost' ||
+      httpOptions.host === '127.0.0.1' ||
+      options.https === false
+    )
       httpOptions.rejectUnauthorized = false;
 
     httpOptions.headers = {
