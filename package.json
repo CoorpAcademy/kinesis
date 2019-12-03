@@ -1,6 +1,6 @@
 {
   "name": "@coorpacademy/kinesis",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "A stream implementation of Amazon's Kinesis forked from mhart/heroku/kinesis",
   "main": "kinesis.js",
   "repository": "coorpacademy/kinesis",
