@@ -1,4 +1,5 @@
 const https = require('https');
+const http = require('http');
 const aws4 = require('aws4');
 const awscred = require('awscred');
 const once = require('once');
@@ -145,11 +146,7 @@ function request(action, data, options, cb) {
     httpOptions.body = body;
 
     // Don't worry about self-signed certs for localhost/testing and http
-    if (
-      httpOptions.host === 'localhost' ||
-      httpOptions.host === '127.0.0.1' ||
-      options.https === false
-    )
+    if (httpOptions.host === 'localhost' || httpOptions.host === '127.0.0.1')
       httpOptions.rejectUnauthorized = false;
 
     httpOptions.headers = {
@@ -172,7 +169,8 @@ function request(action, data, options, cb) {
         action
       });
 
-      const req = https
+      const protocolLib = options.https === false ? http : https;
+      const req = protocolLib
         .request(httpOptions, res => {
           let json = '';
 

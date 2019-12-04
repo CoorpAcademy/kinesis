@@ -2,9 +2,9 @@ import test from 'ava';
 import kinesalite from 'kinesalite';
 import kinesis from '../kinesis';
 
-let ports = 5678;
+let ports = 8765;
 
-test.beforeEach.cb('setup kinesalite', t => {
+test.beforeEach.cb('setup kinesalite with SSL', t => {
   const port = ports++;
   const kinesisServer = kinesalite({ssl: true});
   const kinesisOptions = {host: 'localhost', port};
