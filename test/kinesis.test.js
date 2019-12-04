@@ -38,7 +38,7 @@ test.cb('I can write to a kinesis stream', t => {
 
 test.cb('I can write to a stream configured via endpoint', t => {
   const {host, port} = t.context.kinesisOptions;
-  const kinesisOptions = {endpoint: `http://${host}:${port}`};
+  const kinesisOptions = {endpoint: `https://${host}:${port}`};
   const kinesisStreamOptions = Object.assign({}, kinesisOptions, {name: 'test'});
   const kinesisStream = kinesis.stream(kinesisStreamOptions);
   kinesisStream.write(

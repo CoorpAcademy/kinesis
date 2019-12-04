@@ -1,4 +1,5 @@
 const https = require('https');
+const http = require('http');
 const aws4 = require('aws4');
 const awscred = require('awscred');
 const once = require('once');
@@ -21,8 +22,6 @@ function resolveOptions(options) {
     options.agent = options.agent || region.agent;
     options.https = options.https || region.https;
     options.credentials = options.credentials || region.credentials;
-  } else if (/^[a-z]{2}-[a-z]+-\d$/.test(region)) {
-    options.region = region;
   } else if (options.endpoint) {
     const match = options.endpoint.match(/^(https?):\/\/([\w\-.]+)(?::(\d+))?$/);
     if (!match) throw new Error('Provided endpoint value is invalid');
@@ -30,6 +29,8 @@ function resolveOptions(options) {
     options.host = host;
     if (port) options.port = Number(port);
     options.https = protocol === 'https';
+  } else if (/^[a-z]{2}-[a-z]+-\d$/.test(region)) {
+    options.region = region;
   } else if (!options.host) {
     // Backwards compatibility for when 1st param was host
     options.host = region;
@@ -145,11 +146,7 @@ function request(action, data, options, cb) {
     httpOptions.body = body;
 
     // Don't worry about self-signed certs for localhost/testing and http
-    if (
-      httpOptions.host === 'localhost' ||
-      httpOptions.host === '127.0.0.1' ||
-      options.https === false
-    )
+    if (httpOptions.host === 'localhost' || httpOptions.host === '127.0.0.1')
       httpOptions.rejectUnauthorized = false;
 
     httpOptions.headers = {
@@ -172,7 +169,8 @@ function request(action, data, options, cb) {
         action
       });
 
-      const req = https
+      const protocolLib = options.https === false ? http : https;
+      const req = protocolLib
         .request(httpOptions, res => {
           let json = '';
 
