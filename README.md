@@ -1,10 +1,10 @@
-kinesis
-=======
+# kinesis
 
+[![npm](https://img.shields.io/npm/v/@coorpacademy/kinesis)](https://github.com/CoorpAcademy/kinesis)
 [![Build Status](https://travis-ci.com/CoorpAcademy/kinesis.svg?branch=master)](http://travis-ci.com/CoorpAcademy/kinesis)
 [![codecov](https://codecov.io/gh/CoorpAcademy/kinesis/branch/master/graph/badge.svg)](https://codecov.io/gh/CoorpAcademy/kinesis)
 
-A Node.js stream implementation of [Amazon's Kinesis](http://docs.aws.amazon.com/kinesis/latest/APIReference/).
+> A Node.js stream implementation of [Amazon's Kinesis](http://docs.aws.amazon.com/kinesis/latest/APIReference/).
 
 Allows the consumer to pump data directly into (and out of) a Kinesis stream.
 
@@ -12,59 +12,60 @@ This makes it trivial to setup Kinesis as a logging sink with [Bunyan](https://g
 
 For setting up a local Kinesis instance (eg for testing), check out [Kinesalite](https://github.com/mhart/kinesalite).
 
-NB: API has changed from 0.x to 1.x
------------------------------------
+## Installation
 
-Example
--------
+```bash
+npm install --save @coorpacademy/kinesis
+```
+
+Note, this is a fork from [@heroku kinesis](https://github.com/heroku/kinesis) which was a fork of [@mhart kinesis](https://github.com/mhart/kinesis) who is the author of [Kinesalite](https://github.com/mhart/kinesalite) the local implementation of kinesis.
+Original kinesis library can be found [there](https://www.npmjs.com/package/kinesis)
+
+
+## Example
 
 ```js
 const fs = require('fs');
-const Transform = require('stream').Transform;
-const kinesis = require('kinesis');
-const KinesisStream = kinesis.KinesisStream;
+const {Transform} = require('stream');
+const kinesis = require('@coorpacademy/kinesis');
+const {KinesisStream} = kinesis;
 
 // Uses credentials from process.env by default
 
 kinesis.listStreams({region: 'us-west-1'}, function(err, streams) {
-  if (err) throw err
+  if (err) throw err;
 
-  console.log(streams)
-  // ["http-logs", "click-logs"]
-})
+  console.log(streams); // ["http-logs", "click-logs"]
+});
 
-
-const kinesisSink = kinesis.stream('http-logs')
+const kinesisSink = kinesis.stream('http-logs');
 // OR new KinesisStream('http-logs')
 
-fs.createReadStream('http.log').pipe(kinesisSink)
+fs.createReadStream('http.log').pipe(kinesisSink);
 
-
-const kinesisSource = kinesis.stream({name: 'click-logs', oldest: true})
+const kinesisSource = kinesis.stream({name: 'click-logs', oldest: true});
 
 // Data is retrieved as Record objects, so let's transform into Buffers
-const bufferify = new Transform({objectMode: true})
+const bufferify = new Transform({objectMode: true});
 bufferify._transform = function(record, encoding, cb) {
-  cb(null, record.Data)
-}
+  cb(null, record.Data);
+};
 
-kinesisSource.pipe(bufferify).pipe(fs.createWriteStream('click.log'))
-
+kinesisSource.pipe(bufferify).pipe(fs.createWriteStream('click.log'));
 
 // Create a new Kinesis stream using the raw API
 kinesis.request('CreateStream', {StreamName: 'test', ShardCount: 2}, function(err) {
-  if (err) throw err
+  if (err) throw err;
 
   kinesis.request('DescribeStream', {StreamName: 'test'}, function(err, data) {
-    if (err) throw err
+    if (err) throw err;
 
-    console.dir(data)
-  })
-})
+    console.dir(data);
+  });
+});
 ```
 
-API
----
+## API
 
 ### kinesis.stream(options)
 ### new KinesisStream(options)
