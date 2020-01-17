@@ -1,6 +1,6 @@
 # kinesis
 
-[![npm](https://img.shields.io/npm/v/@coorpacademy/kinesis)](https://github.com/CoorpAcademy/kinesis)
+[![npm](https://img.shields.io/npm/v/@coorpacademy/kinesis)](https://www.npmjs.com/package/@coorpacademy/kinesis)
 [![Build Status](https://travis-ci.com/CoorpAcademy/kinesis.svg?branch=master)](http://travis-ci.com/CoorpAcademy/kinesis)
 [![codecov](https://codecov.io/gh/CoorpAcademy/kinesis/branch/master/graph/badge.svg)](https://codecov.io/gh/CoorpAcademy/kinesis)
 
